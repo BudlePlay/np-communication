@@ -91,6 +91,7 @@ void loop()
       Write4.writeValue(gyro_x);
       Write5.writeValue(gyro_y);
       Write6.writeValue(gyro_z);
+      delay(100);
     }
     Serial.print(F("Disconnected from central: "));
     Serial.println(central.address());

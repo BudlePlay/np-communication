@@ -1,10 +1,16 @@
 import asyncio
 from bleak import BleakClient
 from bleak import BleakScanner
+import time
 
 from pynput.keyboard import Key, Controller
-
+from collections import deque
 import struct
+import torch
+
+model = torch.load('model.pth', map_location=torch.device('cpu'))
+model.eval()
+
 
 class KeyboardInput:
     def __init__(self):
@@ -52,17 +58,33 @@ async def run():
     global address
     async with BleakClient(address) as client:
         print('connected')
-        data=[0,0,0,0,0,0]
+        q=deque(maxlen=15)
         while 1:
+            data=[0,0,0,0,0,0]
             services = await client.get_services()        
             for service in services:
                 for characteristic in service.characteristics:
                     cnt=0
                     for i in uuids:
                         if characteristic.uuid==i:
-                            data[cnt]=round(struct.unpack('f', await client.read_gatt_char(characteristic))[0],2) 
+                            data[cnt]=round(struct.unpack('f', await client.read_gatt_char(characteristic))[0],2)
                         cnt+=1
-                        print(data)
+            # print(data)
+            q.append(data)
+
+            if len(q)>=15:
+                input_tenser = torch.tensor(q)
+
+                accel = input_tenser[:, 0:3]
+                gyro = input_tenser[:, 3:7]
+                accel = accel.reshape(-1)
+                gyro = gyro.reshape(-1)
+
+                out = model(accel.unsqueeze(0), gyro.unsqueeze(0))
+                print(out)
+                
+
+                        
     print('disconnect')
 
 loop = asyncio.get_event_loop()
