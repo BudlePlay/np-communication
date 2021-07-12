@@ -23,6 +23,8 @@ BLEFloatCharacteristic Write6("00000000-0000-0000-0000-000000000026", BLERead);
 float accel_x, accel_y, accel_z;
 float gyro_x, gyro_y, gyro_z;
 
+unsigned int serial_prev_time, led_prev_time;
+
 void setup()
 {
   Serial.begin(115200);
@@ -75,37 +77,51 @@ void loop()
   if (IMU.gyroscopeAvailable())
     IMU.readGyroscope(gyro_x, gyro_y, gyro_z);
 
-   
-
-  Serial.print(accel_x); Serial.print(", "); Serial.print(accel_y); Serial.print(", "); Serial.print(accel_z); Serial.print(", ");
-  Serial.print(gyro_x); Serial.print(", "); Serial.print(gyro_y); Serial.print(", "); Serial.println(gyro_z);
-  delay(100);
-  BLEDevice central = BLE.central();
-  if (central)
-  {
-    Serial.print("Connected to central: ");
-    Serial.println(central.address());
-    while (central.connected())
-    {
-      if (IMU.accelerationAvailable())
-        IMU.readAcceleration(accel_x, accel_y, accel_z);
-      if (IMU.gyroscopeAvailable())
-        IMU.readGyroscope(gyro_x, gyro_y, gyro_z);
-
-      Serial.print(accel_x); Serial.print(", "); Serial.print(accel_y); Serial.print(", "); Serial.print(accel_z); Serial.print(", ");
-      Serial.print(gyro_x); Serial.print(", "); Serial.print(gyro_y); Serial.print(", "); Serial.println(gyro_z);
-
-      Write1.writeValue(accel_x);
-      Write2.writeValue(accel_y);
-      Write3.writeValue(accel_z);
-      Write4.writeValue(gyro_x);
-      Write5.writeValue(gyro_y);
-      Write6.writeValue(gyro_z);
-      delay(100);
-    }
-    Serial.print(F("Disconnected from central: "));
-    Serial.println(central.address());
+  if(millis()-serial_prev_time>100){
+    Serial.print(accel_x); Serial.print(", "); Serial.print(accel_y); Serial.print(", "); Serial.print(accel_z); Serial.print(", ");
+    Serial.print(gyro_x); Serial.print(", "); Serial.print(gyro_y); Serial.print(", "); Serial.println(gyro_z);
+    serial_prev_time=millis();
   }
+  if(millis()-led_prev_time>2000) colorAll(strip.Color(0, 0, 255));
+  if(Serial.available()){
+      int read_data=Serial.read();     
+      if(read_data=='1'){
+        colorAll(strip.Color(255, 255, 255));
+        led_prev_time=millis();
+      }
+      else if(read_data=='2'){
+        colorAll(strip.Color(255, 0, 0));
+        led_prev_time=millis();
+      }
+  }
+  
+  
+//  BLEDevice central = BLE.central();
+//  if (central)
+//  {
+//    Serial.print("Connected to central: ");
+//    Serial.println(central.address());
+//    while (central.connected())
+//    {
+//      if (IMU.accelerationAvailable())
+//        IMU.readAcceleration(accel_x, accel_y, accel_z);
+//      if (IMU.gyroscopeAvailable())
+//        IMU.readGyroscope(gyro_x, gyro_y, gyro_z);
+//
+//      Serial.print(accel_x); Serial.print(", "); Serial.print(accel_y); Serial.print(", "); Serial.print(accel_z); Serial.print(", ");
+//      Serial.print(gyro_x); Serial.print(", "); Serial.print(gyro_y); Serial.print(", "); Serial.println(gyro_z);
+//
+//      Write1.writeValue(accel_x);
+//      Write2.writeValue(accel_y);
+//      Write3.writeValue(accel_z);
+//      Write4.writeValue(gyro_x);
+//      Write5.writeValue(gyro_y);
+//      Write6.writeValue(gyro_z);
+//      delay(100);
+//    }
+//    Serial.print(F("Disconnected from central: "));
+//    Serial.println(central.address());
+//  }
 }
 void colorWipe(uint32_t color, int wait)
 {

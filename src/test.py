@@ -3,7 +3,7 @@ from collections import deque
 from pynput.keyboard import Key, Controller
 import time
 
-ser = serial.Serial("COM7", 115200, timeout=1)
+ser = serial.Serial("COM4", 115200, timeout=1)
 
 q = deque(maxlen=15)
 
@@ -105,10 +105,12 @@ while True:
             if len(memory.q)>=5 and time.time()-prev_time>2:
                 if memory.q.count(1)>memory.q.count(2):
                     print('swing')
-                    kb.inputKey('j')
+                    ser.write(bytes(b'1'))
+                    # kb.inputKey('j')
                 else:
                     print('poke')
-                    kb.inputKey('k')
+                    ser.write(bytes(b'2'))
+                    # kb.inputKey('k')
                 prev_time=time.time()
             memory.q.clear()
 
