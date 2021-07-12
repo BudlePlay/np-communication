@@ -1,6 +1,7 @@
 import serial
 from collections import deque
 from pynput.keyboard import Key, Controller
+import time
 
 ser = serial.Serial("COM7", 115200, timeout=1)
 
@@ -73,7 +74,7 @@ class CMemory:
 
 
 prev_gesture = 0
-
+prev_time=0
 memory = CMemory()
 while True:
     data = ser.readline().decode('utf-8').strip()
@@ -101,6 +102,14 @@ while True:
 
         if memory.end_check():
             print(memory.q)
+            if len(memory.q)>=5 and time.time()-prev_time>2:
+                if memory.q.count(1)>memory.q.count(2):
+                    print('swing')
+                    kb.inputKey('j')
+                else:
+                    print('poke')
+                    kb.inputKey('k')
+                prev_time=time.time()
             memory.q.clear()
 
         # print(gesture_dict[gesture])
