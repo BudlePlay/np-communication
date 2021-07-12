@@ -45,7 +45,7 @@ void setup()
 
   strip.begin();
   strip.show();
-  strip.setBrightness(100);
+  strip.setBrightness(255);
 
   myDFPlayer.volume(30);
 
@@ -70,6 +70,16 @@ void setup()
 
 void loop()
 {
+  if (IMU.accelerationAvailable())
+    IMU.readAcceleration(accel_x, accel_y, accel_z);
+  if (IMU.gyroscopeAvailable())
+    IMU.readGyroscope(gyro_x, gyro_y, gyro_z);
+
+   
+
+  Serial.print(accel_x); Serial.print(", "); Serial.print(accel_y); Serial.print(", "); Serial.print(accel_z); Serial.print(", ");
+  Serial.print(gyro_x); Serial.print(", "); Serial.print(gyro_y); Serial.print(", "); Serial.println(gyro_z);
+  delay(100);
   BLEDevice central = BLE.central();
   if (central)
   {
@@ -81,10 +91,10 @@ void loop()
         IMU.readAcceleration(accel_x, accel_y, accel_z);
       if (IMU.gyroscopeAvailable())
         IMU.readGyroscope(gyro_x, gyro_y, gyro_z);
-      
+
       Serial.print(accel_x); Serial.print(", "); Serial.print(accel_y); Serial.print(", "); Serial.print(accel_z); Serial.print(", ");
       Serial.print(gyro_x); Serial.print(", "); Serial.print(gyro_y); Serial.print(", "); Serial.println(gyro_z);
-      
+
       Write1.writeValue(accel_x);
       Write2.writeValue(accel_y);
       Write3.writeValue(accel_z);
@@ -100,7 +110,7 @@ void loop()
 void colorWipe(uint32_t color, int wait)
 {
   for (int i = 0; i < strip.numPixels(); i++)
-  {                                // For each pixel in strip...
+  { // For each pixel in strip...
     strip.setPixelColor(i, color); //  Set pixel's color (in RAM)
     strip.show();                  //  Update strip to match
     delay(wait);                   //  Pause for a moment

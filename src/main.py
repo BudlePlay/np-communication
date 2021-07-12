@@ -11,6 +11,7 @@ import torch
 model = torch.load('model.pth', map_location=torch.device('cpu'))
 model.eval()
 
+gesture_dict = {0:'wait', 1:'swing', 2:'poke', 3:'error3', 4:'error4'}
 
 class KeyboardInput:
     def __init__(self):
@@ -81,7 +82,10 @@ async def run():
                 gyro = gyro.reshape(-1)
 
                 out = model(accel.unsqueeze(0), gyro.unsqueeze(0))
-                print(out)
+                gesture = out.argmax().item()
+
+
+                print(gesture_dict[gesture])
                 
 
                         
