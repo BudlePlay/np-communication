@@ -60,9 +60,8 @@ class CMemory:
     def block_add(self):
         self.can_add = False
 
-    def end_check(self):
-
-        if len(self.q) > 3:
+    def end_check(self): # swing이나 poke후 다시 wait 인지 확인
+        if len(self.q) > 3: # clear된 직후에는 판정 안되게
             for i in range(1, 4):
                 if self.q[-1 * i] != 0:
                     return False
@@ -95,15 +94,15 @@ while True:
         out = model(accel.unsqueeze(0), gyro.unsqueeze(0))
         gesture = out.argmax().item()
 
-        if prev_gesture != gesture and gesture != 0:
+        if prev_gesture != gesture and gesture != 0: # 저번 제스처가 아니면서 wait가 아닐 때
             memory.allow_add()
 
         memory.add(gesture)
 
         if memory.end_check():
             print(memory.q)
-            if len(memory.q)>=5 and time.time()-prev_time>2:
-                if memory.q.count(1)>memory.q.count(2):
+            if len(memory.q)>=5 and time.time()-prev_time>2: # memory에 충분한 데이터가 쌓여있는지 확인
+                if memory.q.count(1)>memory.q.count(2): # swing 인지 poke 인지 판단
                     print('swing')
                     ser.write(bytes(b'1'))
                     # kb.inputKey('j')
